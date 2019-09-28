@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import Login from './app/Login';
 import { processCourse } from './app/Process';
 import MainPanel from './app/page/MainPanel';
+import LoginPanel from './app/page/LoginPanel';
 import CookieManger from 'react-native-cookies';
+import Loading from './app/util/Loading'
 import {
   AppRegistry,
   StyleSheet,
@@ -12,15 +14,13 @@ import {
   AsyncStorage,
   Button,
 } from 'react-native';
+import Toast from 'react-native-root-toast';
 
 
 export default class HelloWorldApp extends Component {
     constructor(props) {
         super(props);
-        this.userInfo = {
-            username : "",
-            password : ""
-        };
+        console.log(this.userInfo)
         this._getUserInfo();
         this.tableList = new Array(7);
         for (let i = 0; i < this.tableList.length; i++) {
@@ -33,10 +33,22 @@ export default class HelloWorldApp extends Component {
     }
 
 
+    userInfo = {
+        username : "",
+        password : ""
+    };
+
+
     state = {
         isReceivedTableData : false,
-        isReceivedUserInfo : false
+        isReceivedUserInfo : false,
+        isLogin : false,
     };
+
+    reqState = {
+        SUCCESS : 1,
+        FAILED  : 0,
+    }
 
     _getStorageData = async() => {
         var tableList = await AsyncStorage.getItem('tableList');
@@ -48,29 +60,91 @@ export default class HelloWorldApp extends Component {
         return true;
     };
 
+    logout = () => {
+        console.log("logout ");
+        this.setState((previousState) => (
+            { isLogin : false }
+        ));
+        this.userInfo.username = "";
+        this.userInfo.password = "";
+    }
+
+    fresh = () => {
+        AsyncStorage.removeItem("tableList")
+            .then(
+                (res) => {
+                    return Login.login(this.userInfo.username, this.userInfo.password);
+                } 
+            ).then(
+                (text) => {
+                    this.getData(text);
+                    Toast.show("刷新成功", {
+                        duration : Toast.durations.LONG,
+                        position : Toast.positions.BUTTOM,
+                        shadow : true,
+                        animation : true,
+                        hideOnPress : true,
+                        delay : 0,
+                        onShow: () => {
+                            
+                        },
+                        onShown: () => {
+
+                        },
+                        onHide: () => {
+
+                        },
+                        onHidden: () => {
+
+                        }
+                    })
+
+                }
+            )
+    }
+
     render() {
         CookieManger.clearAll();
-        if (!this.state.isReceivedUserInfo
-            ||this.state.isReceivedTableData 
-            || (this.userInfo.username != "" 
-            && this.userInfo.password != ""
-            && this._loginPrepare()))
+        if (!this.state.isReceivedUserInfo) 
+        {
+            console.log("didn't receive userInfo");
+            return (
+                <View>
+                </View>
+            )
+        } 
+        else if (this.state.isReceivedTableData && this.state.isLogin)
         {
             console.log("start render");
             return (
-                <MainPanel tableList={this.tableList} startDay={"2019-08-25"}/>
+                <MainPanel 
+                    fresh={this.fresh}
+                    logout={this.logout}
+                    tableList={this.tableList} startDay={"2019-08-25"}/>
             );
         } 
-        else 
+        else if (this.userInfo.username == "" && this.userInfo.password == "")
         {
             console.log("username and password empty");
             return (
-                <View style={ styles.loginContainer}>
-                    <TextInput style={styles.userNamePanel} autoComplete="username" onChangeText = { (text) => this.userInfo.username = text} placeholder="please input your username" />
-                    <TextInput style={styles.passWordPanel} autoComplete="password" secureTextEntry onChangeText = { (text) => this.userInfo.password = text} placeholder="please input your password" />
-                    <Button style={styles.submitButton} onPress={() => {this._loginPrepare()}} title="登录" />
+                <View style={styles.welcomeContainer}>
+                    <LoginPanel setUserName={(text) => { this.userInfo.username = text}}
+                                setPassword={(text) => { this.userInfo.password = text}}
+                                logout={this.logout}
+                                login={() => {this._loginPrepare(true)}}
+                    />
+                    <Loading> </Loading>
                 </View>
             )
+        }
+        else {
+            console.log("has received loginfo")
+            console.log("userinfo is " + JSON.stringify(this.userInfo));
+            this._loginPrepare(false);
+            return (
+                <View>
+                </View>
+            );
         }
     }
 
@@ -80,32 +154,65 @@ export default class HelloWorldApp extends Component {
         AsyncStorage.setItem("userInfo", JSON.stringify(this.userInfo));
         AsyncStorage.setItem("tableList", JSON.stringify(this.tableList));
         console.log("storage tableList and userInfo successfully");
-        this.setState((previousState) => (
-            { isReceivedTableData : true }
-        ));
+        this.setState((previousState) => ({ 
+            isReceivedTableData : true,
+            isLogin : true,
+        }));
     }
 
-    _loginPrepare() {
+    _loginPrepare(isUserLogin) {
         this._getStorageData()
             .then(
                 (res) => {
                     if (!res) {
+                        if (isUserLogin)
+                            Loading.show();
+                        console.log("state is " + JSON.stringify(this.state))
+                        console.log("login username and password is " +  this.userInfo.username + " " + this.userInfo.password);
                         return Login.login(this.userInfo.username, this.userInfo.password);
                     } else {
-                        this.setState((previousState) => (
-                            { isReceivedTableData : true }
-                        ));
+                        this.setState((previousState) => ({ 
+                            isReceivedTableData : true,
+                            isLogin : true, 
+                        }));
                         console.log("get data successful and use this data");
-                        return Promise.reject("get data successfully")
+                        return Promise.reject(this.reqState.SUCCESS)
                     }
                 }
             ).then(
                 (text) => {
+                    if (isUserLogin)
+                        Loading.hide();
                     this.getData(text);
                 }
             ).catch(
                 (err) => {
-                    console.log(err);
+                    console.log("err is " + err);
+                    if (isUserLogin)
+                        Loading.hide();
+                    if (err != this.reqState.SUCCESS)
+                    {
+                        Toast.show("登录失败，请确认账号密码是否正确", {
+                            duration : Toast.durations.LONG,
+                            position : Toast.positions.BUTTOM,
+                            shadow : true,
+                            animation : true,
+                            hideOnPress : true,
+                            delay : 0,
+                            onShow: () => {
+                                
+                            },
+                            onShown: () => {
+
+                            },
+                            onHide: () => {
+
+                            },
+                            onHidden: () => {
+
+                            }
+                        })
+                    }
                 }
             )
         return true;
@@ -115,9 +222,9 @@ export default class HelloWorldApp extends Component {
         try {
             var userInfo = await AsyncStorage.getItem("userInfo");
             if (userInfo != undefined) {
-                this.userInfo = userInfo;
+                this.userInfo = JSON.parse(userInfo);
             }
-            console.log("userInfo is " + JSON.stringify(userInfo));
+            console.log("userInfo is ");
             this.setState((previousState) => (
                 { isReceivedUserInfo : true }
             ));
@@ -128,15 +235,6 @@ export default class HelloWorldApp extends Component {
             console.log("get userInfo failed");
         }
     };
-
-    _clearUserInfo() {
-        AsyncStorage.clear((err) => {
-            if (err) {
-                console.log("clear information error!");
-            }
-        })
-    }
-
 
 }
 

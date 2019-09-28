@@ -8,6 +8,7 @@ import {
 import CourseTable from '../component/CourseTable.js'
 import FreshIcon from '../../static/img/fresh.svg'
 import ListIcon from '../../static/img/list.svg'
+import Menu, { MenuItem, MenuDivider} from 'react-native-material-menu';
 
 
 
@@ -42,6 +43,18 @@ export default class MainPanel extends Component {
         week : 0
     };
 
+    setMenuRef = ref => {
+        this._menu = ref;
+    }
+
+    hideMenu = () => {
+        this._menu.hide();
+    };
+
+    showMenu = () => {
+        this._menu.show();
+    };
+
     render() {
         console.log("first is " + this.firstDay);
         return (
@@ -55,9 +68,13 @@ export default class MainPanel extends Component {
                         </Text>
                     </View>
                     <View style={styles.etcBlock}>
-                        <FreshIcon onPress={this.clearData} height={20} width={40} />
-                        <ListIcon onPress={this.clearData} height={20} width={40} />
-
+                        <FreshIcon onPress={this.props.fresh} height={25} width={40} />
+                        <Menu 
+                            ref={this.setMenuRef}
+                            button={<ListIcon onPress={this.showMenu} height={25} width={40} />}
+                        >
+                            <MenuItem onPress={() => {this.clearData(); this.props.logout()}}>退出登录</MenuItem>
+                        </Menu> 
                     </View>
                 </View>
                 <View style={ styles.tableMain } >
