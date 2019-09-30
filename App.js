@@ -22,6 +22,11 @@ export default class HelloWorldApp extends Component {
         super(props);
         console.log(this.userInfo)
         this._getUserInfo();
+
+        console.log("1. table is " + JSON.stringify(this.tableList));
+    }
+
+    initTableList() {
         this.tableList = new Array(7);
         for (let i = 0; i < this.tableList.length; i++) {
             this.tableList[i] = new Array(5);
@@ -29,9 +34,7 @@ export default class HelloWorldApp extends Component {
                 this.tableList[i][j] = [];
             }
         }
-        console.log("1. table is " + JSON.stringify(this.tableList));
     }
-
 
     userInfo = {
         username : "",
@@ -149,6 +152,7 @@ export default class HelloWorldApp extends Component {
     }
 
     getData(text) {
+        this.initTableList();
         processCourse(text, this.tableList);
         console.log(this.tableList);
         AsyncStorage.setItem("userInfo", JSON.stringify(this.userInfo));

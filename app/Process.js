@@ -44,6 +44,8 @@ export function processCourse(text, list) {
 function createCourse(coursename, classroom, weeks, table) {
     var obj;
     var matched = weeks.match(/\d+/g),
+        start = parseInt(matched[0]),
+        end = parseInt(matched[1]),
         startTime = parseInt(matched[2]),
         endTime = parseInt(matched[3]);
 
@@ -51,26 +53,36 @@ function createCourse(coursename, classroom, weeks, table) {
   //  console.log(classroom);
   //  console.log(weeks); 
 
+    console.log("开始")
     for (let i = 0; i < table.length; i++) {
-        if (table[i].coursename == coursename
-            && table[i].classroom == classroom
-            && table[i].startTime == startTime
-            && table[i].endTime == endTime) 
+        if (table[i].coursename == coursename && table[i].classroom == classroom) 
         {
-                table[i].weeks.push({
-                    start : parseInt(matched[0]),
-                    end   : parseInt(matched[1]),
-                })
-                return;
+            console.log("week length is " + table[i].weeks.length)
+            for (let j = 0; j < table[i].weeks.length; j++)
+            {
+                if (table[i].weeks[j].start == start && table[i].weeks[j].end == end)
+                {
+                    console.log("重复内容");
+                    return
+                }
+            }
+
+            table[i].weeks.push({
+                start : start,
+                end   : end,
+            })
+            console.log("中间")
+            return;
         }
     }
+    console.log("结束")
 
     table.push({
         "coursename" : coursename,
         "classroom" : classroom,
         "weeks" : [{
-            "start" : parseInt(matched[0]),
-            "end"   : parseInt(matched[1]),
+            "start" : start,
+            "end"   : end,
         },],
         "startTime" : startTime,
         "endTime" : endTime

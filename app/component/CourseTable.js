@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Popup from './Popup';
 import {
     ScrollView,
     StyleSheet,
@@ -90,7 +91,8 @@ class TableCell extends Component {
     }
 
     getCourse() {
-        var week = 4;
+        const week = this.props.week;
+        console.log("week is" +  week);
         if (this.props.course != undefined && this.props.course.length != 0) {
             for (let i = 0; i < this.props.course.length; i++) {
                 let each_course = this.props.course[i];
@@ -204,6 +206,7 @@ export default class CourseTable extends Component {
                         <TableCell 
                             key={i*5 + j}
                             type="small"
+                            week={this.props.week}
                             day={i}
                             course={course} 
                         >
@@ -214,6 +217,7 @@ export default class CourseTable extends Component {
                         <TableCell  
                             key={i*5 + j}
                             type="big"
+                            week={this.props.week}
                             day={i}
                             course={course}
                         >
@@ -261,12 +265,12 @@ const styles = StyleSheet.create({
 
     smallCell : {
         flex : 1,
-        padding : 8,
+        padding : 5,
         backgroundColor : "#4F94CD",
     },
     bigCell : {
         flex : 2,
-        padding : 8,
+        padding : 5,
         backgroundColor : "#4F94CD",
     },
     emptyCell : {
@@ -310,10 +314,10 @@ const styles = StyleSheet.create({
         backgroundColor : "white",
     },
     courseNameContainer : {
-        flex : 6,
+        flex : 7,
     },
     classRoomContainer : {
-        flex : 4,
+        flex : 3,
     },
     courseName : {
         color : "white",
@@ -321,7 +325,7 @@ const styles = StyleSheet.create({
     },
     classRoom : {
         color : "white",
-        fontSize : 11
+        fontSize : 9 
     }, 
     emptyItem : {
         flex : 1, 
