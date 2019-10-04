@@ -90,6 +90,8 @@ export default class Popup extends Component {
     }
 
 
+
+
     renderAllCourses() {
         if (this.state.courses != undefined) {
             let {modelBoxHeight} = this.props;
@@ -102,7 +104,7 @@ export default class Popup extends Component {
             console.log("length is " + courses.length);
             for (let i = 0; i < courses.length; i++) {
                 courseRender.push(
-                    <TouchableOpacity key={"a" + i} style={[styles.renderedItem, {height : modelBoxHeight}]}>
+                    <TouchableOpacity key={"a" + i} onPress={() => {this.props.showCourseInfo(courses[i])}} style={[styles.renderedItem, {height : modelBoxHeight}]}>
                         <Text>{courses[i].coursename}</Text>
                     </TouchableOpacity>
                 )

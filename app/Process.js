@@ -55,7 +55,8 @@ function createCourse(coursename, classroom, weeks, table) {
 
     console.log("开始")
     for (let i = 0; i < table.length; i++) {
-        if (table[i].coursename == coursename && table[i].classroom == classroom) 
+        if (table[i].coursename == coursename && table[i].classroom == classroom
+            && table[i].starTime == starTime && table[i].endTime == endTime) 
         {
             console.log("week length is " + table[i].weeks.length)
             for (let j = 0; j < table[i].weeks.length; j++)
