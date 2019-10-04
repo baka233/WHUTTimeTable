@@ -9,6 +9,7 @@ import CourseTable from '../component/CourseTable.js'
 import FreshIcon from '../../static/img/fresh.svg'
 import ListIcon from '../../static/img/list.svg'
 import Menu, { MenuItem, MenuDivider} from 'react-native-material-menu';
+import Popup from '../component/Popup'
 
 
 
@@ -55,6 +56,12 @@ export default class MainPanel extends Component {
         this._menu.show();
     };
 
+    showPopup = (courses) => {
+        if (this.popup != undefined) {
+            this.popup.show(courses);
+        }
+    }
+
     render() {
         console.log("first is " + this.firstDay);
         return (
@@ -78,8 +85,21 @@ export default class MainPanel extends Component {
                     </View>
                 </View>
                 <View style={ styles.tableMain } >
-                    <CourseTable tableData={this.props.tableList } week={this.state.week} startDay={this.firstDay} day={this.day}/>
+                    <CourseTable 
+                        tableData={this.props.tableList } 
+                        week={this.state.week} 
+                        startDay={this.firstDay} 
+                        day={this.day}
+                        showPopup={this.showPopup}
+                    />
                 </View>
+                <Popup
+                    ref={(ref) => {this.popup = ref}}    
+                    modelBoxBg={"white"}
+                    modelBoxHeight={50}
+                    transparentIsClick={()=>{}}
+                >
+                </Popup>
             </View>
         )
     }

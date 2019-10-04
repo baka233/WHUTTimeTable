@@ -2,17 +2,27 @@ import React, { Component } from 'react';
 import Popup from './Popup';
 import {
     ScrollView,
+    TouchableOpacity,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 
+class TableType {
+    static get Small() {
+        return "small";
+    }
+
+    static get Big() {
+        return "big";
+    }
+}
 
 class TableCell extends Component {
     constructor(props) {
         super(props)
+        this.hasNoCourse = true;
     }
-
 
     courseData = null;
 
@@ -27,29 +37,42 @@ class TableCell extends Component {
         )
     }
 
+    _showCourses = () => {
+        this.props.showCourses(this.props.course);
+    }
+
+
     renderCourse() {
         if (this.courseData != undefined) {
+            var color = this.hasNoCourse ? "#84828A" : "white";
             return (
                 <View style={this.getCourseStyle()}>
-                    <View style={styles.courseNameContainer} >
-                        <Text style={styles.courseName}>
-                            { this.getCourseName() }
-                        </Text>
-                    </View>
-                    <View style={styles.classRoomContainer} >
-                        <Text style={styles.classRoom}>
-                            { this.getClassRoom() }
-                        </Text>
-                    </View>
+                    <TouchableOpacity style={{flex:1}} onPress={this._showCourses}>
+                        <View style={{flex : 1}}>
+                            <View style={styles.courseNameContainer} >
+                                <Text style={[styles.courseName, {color : color}]}>
+                                    { this.getCourseName() }
+                                </Text>
+                            </View>
+                            <View style={styles.classRoomContainer} >
+                                <Text style={[styles.classRoom, {color : color}]}>
+                                    { this.getClassRoom() }
+                                </Text>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             )
         }
     }
 
     isSmallSection() {
-        if (this.courseData == null && this.courseData.endTime - this.courseData.startTime == 2
-            && this.props.type == "big")
+        if (this.courseData != null)
+            console.log("time length is " + (this.courseData.endTime - this.courseData.startTime + 1));
+        if (this.courseData != null && (this.courseData.endTime - this.courseData.startTime + 1) == 2 && this.props.type == TableType.Big) {
+            console.log(JSON.stringify(this.courseData) + " is small course");    
             return true;
+        }
         return false;
     }
 
@@ -57,10 +80,19 @@ class TableCell extends Component {
         if (this.props.type != undefined) {
             if (this.courseData == undefined
                 || this.isSmallSection())
+            {
+                var emptyStyle = [styles.emptyCell,];
+
+                if (this.courseData == undefined) {
+                    emptyStyle.push(styles.emptyColor);
+                    emptyStyle.push(styles.tableBoarder);
+                }
+
                 return (
-                    <View style={styles.emptyCell}>
+                    <View style={emptyStyle}>
                     </View>
                 )
+            }
         }
     }
 
@@ -73,36 +105,42 @@ class TableCell extends Component {
                 styles.dayFiveColor, styles.daySixColor,
                 styles.daySevenColor
             ];
-            if (this.courseData.endTime - this.courseData.startTime == 2) {
-                style.push(styles.smallCell);
+            if (this.props.type == TableType.Small) {
+                style.push(styles.courseSmallCell);
             } else {
-                style.push(styles.bigCell);
+                style.push(styles.courseBigCell);
             }
-            style.push(dayColorStyle[this.props.day])
+            if (this.hasNoCourse)
+                style.push(styles.emptyColor);
+            else
+                style.push(dayColorStyle[this.props.day])
+            style.push(styles.tableBoarder)
             return style;
         }
     }
 
     getStyle() {
-        if (this.props.type != undefined && this.props.type == "small")
-            return styles.courseSmallCell;
+        if (this.props.type != undefined && this.props.type == TableType.Small)
+            return styles.smallCell;
         else
-            return styles.courseBigCell;
+            return styles.bigCell;
     }
 
     getCourse() {
         const week = this.props.week;
-        console.log("week is" +  week);
+        console.log("week is " +  week);
         if (this.props.course != undefined && this.props.course.length != 0) {
             for (let i = 0; i < this.props.course.length; i++) {
                 let each_course = this.props.course[i];
                 for (let j = 0; j < each_course.weeks.length; j++) {
                     if (each_course.weeks[j].start <= week && each_course.weeks[j].end >= week)
                     {
+                        this.hasNoCourse = false;
                         return each_course;
                     }
                 }
             }
+            return this.props.course[0];
         }
         return null;
     }
@@ -188,6 +226,7 @@ export default class CourseTable extends Component {
         var itemArr = [];
         var day = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
         var date = this.getDate();
+        
 
         for (let i = 0; i < 7; i++) {
             let dayItem = [];
@@ -205,23 +244,23 @@ export default class CourseTable extends Component {
                     row.push(
                         <TableCell 
                             key={i*5 + j}
-                            type="small"
+                            type={TableType.Small}
                             week={this.props.week}
                             day={i}
                             course={course} 
-                        >
-                        </TableCell>
+                            showCourses={this.props.showPopup}
+                        />
                     )
                 } else {
                     row.push(
                         <TableCell  
                             key={i*5 + j}
-                            type="big"
+                            type={TableType.Big}
                             week={this.props.week}
                             day={i}
                             course={course}
-                        >
-                        </TableCell>
+                            showCourses={this.props.showPopup}
+                        />
                     )
                 }
             }
@@ -262,13 +301,18 @@ const styles = StyleSheet.create({
         flex : 1,    
         flexDirection : "row"
     },
-
-    smallCell : {
+    tableBoarder: {
+        borderWidth : 1,
+        borderColor : "white",
+        borderRadius : 5,
+        overflow: 'hidden'
+    },
+    courseSmallCell : {
         flex : 1,
         padding : 5,
         backgroundColor : "#4F94CD",
     },
-    bigCell : {
+    courseBigCell : {
         flex : 2,
         padding : 5,
         backgroundColor : "#4F94CD",
@@ -276,23 +320,11 @@ const styles = StyleSheet.create({
     emptyCell : {
         flex : 1,
     }, 
-    courseSmallCell : {
+    smallCell : {
         flex : 2,
-        borderWidth : 1,
-        borderColor : "white",
-        backgroundColor : '#E4E2EA',
-        borderRadius : 5,
-        overflow : "hidden"
-           
     },
-    courseBigCell : {
+    bigCell : {
         flex : 3,
-        borderWidth : 1,
-        borderColor : "white",
-        backgroundColor : '#E4E2EA',
-        borderRadius : 5,
-        overflow: 'hidden'
-       
     },
     title : {
         flex : 1,
@@ -320,11 +352,9 @@ const styles = StyleSheet.create({
         flex : 3,
     },
     courseName : {
-        color : "white",
         fontSize : 11
     },
     classRoom : {
-        color : "white",
         fontSize : 9 
     }, 
     emptyItem : {
@@ -385,5 +415,8 @@ const styles = StyleSheet.create({
     },
     daySevenColor : {
         backgroundColor : "#FF7433"
+    },
+    emptyColor : {
+        backgroundColor : '#E4E2EA',
     }
 });
