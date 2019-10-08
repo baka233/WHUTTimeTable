@@ -23,6 +23,7 @@ export default class MainPanel extends Component {
         var timezone = "+08:00";
         var startDayTimestamp = new Date(this.props.startDay + "T00:00:00" + timezone);
         this.state.week =  parseInt((day - startDayTimestamp) / (1000 * 3600 * 24 * 7));
+        this.thisWeek = this.state.week;
         console.log("week is" + this.state.week);
 
         this.firstDay = day.getTime() - 1000 * 3600 * 24 * ((day.getDay() + 6) % 7);
@@ -77,7 +78,7 @@ export default class MainPanel extends Component {
                     </View>
                     <View style={styles.titleBlock}>
                         <Text style={ styles.titleMsg } >
-                            我的课表
+                            {"第" + this.state.week + "周"}
                         </Text>
                     </View>
                     <View style={styles.etcBlock}>
@@ -103,6 +104,7 @@ export default class MainPanel extends Component {
                     ref={(ref) => {this.popup = ref}}    
                     modelBoxBg={"white"}
                     modelBoxHeight={50}
+                    thisWeek={this.thisWeek}
                     showCourseInfo={this.showCourseInfo}
                     transparentIsClick={()=>{}}
                 >

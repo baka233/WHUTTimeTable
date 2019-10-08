@@ -4,6 +4,29 @@ export function processCourse(text, list) {
     var $ = cheerio.load(text),
         table = $('.table-class-even').children();
 
+    var courseTeacherMap = {};
+    try {
+        teachers = $($($('.table-long').find('tbody')[1]).children());
+
+        //console.log(teachers);
+
+
+        for (let i = 0; i < teachers.length; i++) {
+            teach = $(teachers[i]);
+            courseInfo = teach.find("td");
+            console.log($(courseInfo[0]).text());
+            
+            if (courseInfo != undefined) {
+                courseTeacherMap[$(courseInfo[0]).text()] = $(courseInfo[4]).text() ;               
+            }
+        }
+
+        console.log(courseTeacherMap);
+    } catch(err) {
+        console.log("get teacher info error");    
+    }
+
+   
     
     for (let i = 0; i < table.length; i++) {
         row = $(table[i]).children();
@@ -15,11 +38,13 @@ export function processCourse(text, list) {
             if (ans.length > 0) {
                 for (let k = 0; k < ans.length; k++) {
                     let tmp = $(ans[k]).children('p');
-                    createCourse($(ans[k]).children()[0].prev.data.trim(), $(tmp[0]).text(), $(tmp[1]).text(), list[j - (row.length - 7)][i]);
+                    createCourse($(ans[k]).children()[0].prev.data.trim(), $(tmp[0]).text(), $(tmp[1]).text(), list[j - (row.length - 7)][i], courseTeacherMap);
                 }
             }
         }
     }
+
+
 }
 
 //function parseCell(node, table, depth) {
@@ -41,7 +66,7 @@ export function processCourse(text, list) {
 //    }
 //}
 
-function createCourse(coursename, classroom, weeks, table) {
+function createCourse(coursename, classroom, weeks, table, courseTeacherMap) {
     var obj;
     var matched = weeks.match(/\d+/g),
         start = parseInt(matched[0]),
@@ -53,12 +78,10 @@ function createCourse(coursename, classroom, weeks, table) {
   //  console.log(classroom);
   //  console.log(weeks); 
 
-    console.log("开始")
     for (let i = 0; i < table.length; i++) {
         if (table[i].coursename == coursename && table[i].classroom == classroom
-            && table[i].starTime == starTime && table[i].endTime == endTime) 
+            && table[i].startTime == startTime && table[i].endTime == endTime) 
         {
-            console.log("week length is " + table[i].weeks.length)
             for (let j = 0; j < table[i].weeks.length; j++)
             {
                 if (table[i].weeks[j].start == start && table[i].weeks[j].end == end)
@@ -72,15 +95,19 @@ function createCourse(coursename, classroom, weeks, table) {
                 start : start,
                 end   : end,
             })
-            console.log("中间")
             return;
         }
     }
-    console.log("结束")
+
+    var teacher = "";
+    if (courseTeacherMap[coursename] != undefined) {
+        teacher = courseTeacherMap[coursename];
+    }
 
     table.push({
         "coursename" : coursename,
         "classroom" : classroom,
+        "teacher" : teacher,
         "weeks" : [{
             "start" : start,
             "end"   : end,

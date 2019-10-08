@@ -97,6 +97,14 @@ export default class CourseView extends Component {
                         </View>
                         <View style={styles.infoItem}>
                             <View style={{flex : 1 }}>
+                                <Text style={styles.description}>授课老师</Text>
+                            </View>
+                            <View style={{flex : 2 }}>
+                                <Text style={styles.detail}>{this.state.course.teacher}</Text>
+                            </View>
+                        </View>
+                        <View style={styles.infoItem}>
+                            <View style={{flex : 1 }}>
                                 <Text style={styles.description}>授课周数</Text>
                             </View>
                             <View style={{flex : 2 }}>
@@ -133,7 +141,7 @@ const styles = StyleSheet.create({
         position : 'absolute',
         width : width,
         height : height,
-        backgroundColor : 'rgba(0,0,0,0.5)',
+        backgroundColor : 'rgba(0,0,0,0.7)',
         elevation : 100,
     },
     opacityArea : {
@@ -150,7 +158,9 @@ const styles = StyleSheet.create({
         backgroundColor : "#2233FF",
         justifyContent : "center",
         alignItems : "center",
-        flex : 1.8
+        borderTopLeftRadius : 5,
+        borderTopRightRadius : 5,
+        flex :3 
     },
     infoItem : {
         flex : 3,

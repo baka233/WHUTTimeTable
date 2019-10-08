@@ -60,8 +60,8 @@ export default class Popup extends Component {
         
 
         if (this.state.show) {
-            var guard = parseInt(modelBoxHeight / 10);
-            var boxHeight = (modelBoxHeight + guard) * (this.state.courses.length + 1) ;
+            var guard = 1;
+            var boxHeight = (modelBoxHeight + guard) * (this.state.courses.length + 1.5);
             console.log("boxHeight is " + boxHeight)
             return (
                 <View style={styles.container}>
@@ -71,7 +71,7 @@ export default class Popup extends Component {
                         style={[{
                             width : width,
                             height : boxHeight, backgroundColor : modelBoxBg,
-                            border : 3, borderRadius : 10,
+                            borderRadius : 10,
                             transform : [{
                                 translateY: this.state.offset.interpolate({
                                     inputRange : [0, 1],
@@ -100,12 +100,28 @@ export default class Popup extends Component {
             var courses = this.state.courses;
             var courseRender = [];
 
+            var flag = false;
 
             console.log("length is " + courses.length);
             for (let i = 0; i < courses.length; i++) {
+                var renderedItem = styles.renderedItem
+                var appendStr = "";
+                var textColor = "black";
+        
+                if (!flag) {
+                    var weeks = courses[i].weeks;
+                    for (let j = 0; j < weeks.length; j++) {
+                        if (weeks[j].start <= this.props.thisWeek && weeks[j].end >= this.props.thisWeek) {
+                            flag = true;
+                            appendStr = "(本周)";
+                            textColor = "#33ccff";
+                        }
+                    }
+                }
+
                 courseRender.push(
                     <TouchableOpacity key={"a" + i} onPress={() => {this.props.showCourseInfo(courses[i])}} style={[styles.renderedItem, {height : modelBoxHeight}]}>
-                        <Text>{courses[i].coursename}</Text>
+                        <Text style={{color : textColor}}>{courses[i].coursename + appendStr}</Text>
                     </TouchableOpacity>
                 )
                 courseRender.push(
@@ -142,7 +158,8 @@ const styles = StyleSheet.create({
     renderedItem : {
         alignItems : "center",
         justifyContent : "center",
-    }
+        flexShrink : 1,
+    },
 })
 
 Popup.defaultProps = {
